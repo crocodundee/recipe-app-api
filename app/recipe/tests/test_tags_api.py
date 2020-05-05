@@ -81,3 +81,15 @@ class PrivateTagsApiTests(TestCase):
         res = self.client.post(TAGS_URL, payload)
 
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_exists_tag(self):
+        """Test if already exists tag not creating"""
+        payload = {'name': 'Tag'}
+        res = self.client.post(TAGS_URL, payload)
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        res = self.client.post(TAGS_URL, payload)
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+        tag = Tag.objects.filter(name=payload['name'])
+        self.assertEqual(len(tag), 1)
