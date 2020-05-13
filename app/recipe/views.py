@@ -44,9 +44,23 @@ class RecipeViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.RecipeSerializer
     queryset = Recipe.objects.all()
 
+    def _get_params_id(self, qs):
+        """Convert a list of string IDs to a list of interger"""
+        return [int(str_id) for str_id in qs.split(',')]
+
     def get_queryset(self):
         """Retrieve recipes list order to user"""
-        return self.queryset.filter(user=self.request.user)
+        tags = self.request.query_params.get('tags')
+        ingredients = self.request.query_params.get('ingredients')
+        queryset = self.queryset
+        if tags:
+            tag_ids = self._get_params_id(tags)
+            queryset = queryset.filter(tags__id__in=tag_ids)
+        if ingredients:
+            ing_ids = self._get_params_id(ingredients)
+            queryset = queryset.filter(ingredients__id__in=ing_ids)
+
+        return queryset.filter(user=self.request.user)
 
     def get_serializer_class(self):
         """Return a serializer class specify to action on recipe endpoint"""
